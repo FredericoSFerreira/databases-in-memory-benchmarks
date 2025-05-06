@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 5s  # Coleta métricas a cada 5 segundos
+
+scrape_configs:
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis_exporter:9121']
+
+  - job_name: 'valkey'
+    static_configs:
+      - targets: ['valkey_exporter:9121']
+
+  - job_name: 'dragonfly'
+    static_configs:
+      - targets: ['dragonfly_exporter:9121']
+
+  - job_name: 'keydb'
+    static_configs:
+      - targets: ['keydb_exporter:9121']

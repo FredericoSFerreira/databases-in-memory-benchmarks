@@ -1,0 +1,100 @@
+version: '3.9'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    mem_limit: "8G"
+    cpus: "8.0"
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    ports:
+      - "6380:6379"
+    mem_limit: "8G"
+    cpus: "8.0"
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: dragonfly
+    ports:
+      - "6381:6379"
+    mem_limit: "8G"
+    cpus: "8.0"
+
+  keydb:
+    image: eqalpha/keydb:latest
+    container_name: keydb
+    ports:
+      - "6382:6379"
+    mem_limit: "8G"
+    cpus: "8.0"
+    command: keydb-server --server-threads 16
+
+  redis_exporter:
+    image: oliver006/redis_exporter
+    container_name: redis_exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+
+  valkey_exporter:
+    image: oliver006/redis_exporter
+    container_name: valkey_exporter
+    ports:
+      - "9122:9121"
+    environment:
+      - REDIS_ADDR=redis://valkey:6379
+
+  dragonfly_exporter:
+    image: oliver006/redis_exporter
+    container_name: dragonfly_exporter
+    ports:
+      - "9123:9121"
+    environment:
+      - REDIS_ADDR=redis://dragonfly:6379
+
+  keydb_exporter:
+    image: oliver006/redis_exporter
+    container_name: keydb_exporter
+    ports:
+      - "9124:9121"
+    environment:
+      - REDIS_ADDR=redis://keydb:6379
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./data/prometheus:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./portainer-data:/data
+    ports:
+      - 9000:9000
